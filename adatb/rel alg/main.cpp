@@ -111,7 +111,7 @@ namespace db {
 		}
 
 		template <template <class...> class RecordType, class... Args>
-		constexpr auto create_relation_type_helper(RecordType<Args...> arg) {
+		constexpr auto create_relation_type_helper(RecordType<Args...> arg) -> db::relation<Args...> {
 			return db::relation<Args...>{};
 		};
 
@@ -123,8 +123,8 @@ namespace db {
 	auto query(Domain&& domain, Invokable&& invokable) {
 		
 		using function_type = ::utility::function_traits<Invokable>;
-		using result_relation_type = db::details::relation_type<function_type::arg<0> >;
-		constexpr auto arity = std::tuple_size<function_type::arg<0>>::value;
+		using result_relation_type = db::details::relation_type<typename function_type::template arg<0>>;
+		constexpr auto arity = std::tuple_size<typename function_type::template arg<0>>::value;
 		
 		result_relation_type result{};
 		typename result_relation_type::record_type rec{};
@@ -139,8 +139,8 @@ namespace db {
 	bool any(Domain&& domain, Invokable&& invokable) {
 
 		using function_type = ::utility::function_traits<Invokable>;
-		using result_relation_type = db::details::relation_type<function_type::arg<0>>;
-		constexpr auto arity = std::tuple_size<function_type::arg<0>>::value;
+		using result_relation_type = db::details::relation_type<typename function_type::template arg<0>>;
+		constexpr auto arity = std::tuple_size<typename function_type::template arg<0>>::value;
 
 		typename result_relation_type::record_type rec{};
 		return db::details::any<arity>(domain, rec, std::forward<Invokable>(invokable));
@@ -150,8 +150,8 @@ namespace db {
 	bool all(Domain&& domain, Invokable&& invokable) {
 
 		using function_type = ::utility::function_traits<Invokable>;
-		using result_relation_type = db::details::relation_type<function_type::arg<0>>;
-		constexpr auto arity = std::tuple_size<function_type::arg<0>>::value;
+		using result_relation_type = db::details::relation_type<typename function_type::template arg<0>>;
+		constexpr auto arity = std::tuple_size<typename function_type::template arg<0>>::value;
 		
 		typename result_relation_type::record_type rec{};
 		return db::details::all<arity>(domain, rec, std::forward<Invokable>(invokable));
