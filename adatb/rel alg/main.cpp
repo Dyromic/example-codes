@@ -21,6 +21,30 @@ namespace utility {
 
 		template <std::size_t I>
 		using arg = std::tuple_element_t<I, args>;
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <algorithm>
+#include <initializer_list>
+#include <numeric>
+#include <variant>
+#include <set>
+#include <functional>
+
+namespace utility {
+
+	template<class F>
+	struct function_traits : public function_traits<decltype(&F::operator())> {};
+
+	template <class R, class... Args>
+	struct function_traits<R(*)(Args...)> {
+
+		typedef R result;
+
+		using args = typename std::tuple<Args...>;
+
+		template <std::size_t I>
+		using arg = std::tuple_element_t<I, args>;
 
 		static constexpr std::size_t arg_num = sizeof...(Args);
 
@@ -28,7 +52,7 @@ namespace utility {
 
 	template <class F, class R, class... Args>
 	struct function_traits<R(F::*)(Args...)> : public function_traits<R(*)(Args...)> {
-		using class_t = typename F;
+		typedef F class_t;
 	};
 
 	template <class F, class R, class... Args>
@@ -53,7 +77,7 @@ namespace db {
 		
 	};
 
-	// Implementációt segítõ függvények típusok
+	// ImplementÃ¡ciÃ³t segÃ­tÅ‘ fÃ¼ggvÃ©nyek tÃ­pusok
 	namespace details {
 
 		template <std::size_t N, class Domain, class Relation, class Record, class Invokable>
@@ -65,7 +89,7 @@ namespace db {
 				}
 			} else {
 
-				for (auto v: domain.get<N - 1>()) {
+				for (auto v: domain.template get<N - 1>()) {
 					std::get<N - 1>(rec) = v;
 					query<N - 1>(domain, rel, rec, std::forward<Invokable>(invokable));
 				}
@@ -82,7 +106,7 @@ namespace db {
 			}
 			else {
 
-				for (auto v : domain.get<N - 1>()) {
+				for (auto v : domain.template get<N - 1>()) {
 					std::get<N - 1>(rec) = v;
 					if (any<N - 1>(domain, rec, std::forward<Invokable>(invokable))) return true;
 				}
@@ -99,7 +123,7 @@ namespace db {
 			}
 			else {
 
-				for (auto v : domain.get<N - 1>()) {
+				for (auto v : domain.template get<N - 1>()) {
 					std::get<N - 1>(rec) = v;
 					if (!all<N - 1>(domain, rec, std::forward<Invokable>(invokable))) return false;
 				}
@@ -122,7 +146,7 @@ namespace db {
 	auto query(Domain&& domain, Invokable&& invokable) {
 		
 		using function_type = ::utility::function_traits<Invokable>;
-		using result_relation_type = db::details::relation_type<function_type::arg<0>>;
+		using result_relation_type = db::details::relation_type<function_type::arg<0> >;
 		constexpr auto arity = std::tuple_size<function_type::arg<0>>::value;
 		
 		result_relation_type result{};
@@ -166,7 +190,7 @@ namespace db {
 			std::iota(domain.begin(), domain.end(), min);
 		}
 
-		// Az N. komponens domain-je matematikai értelemben nem különböztetjük meg õket egy halmaz tartozik az összes komponenshez
+		// Az N. komponens domain-je matematikai Ã©rtelemben nem kÃ¼lÃ¶nbÃ¶ztetjÃ¼k meg Å‘ket egy halmaz tartozik az Ã¶sszes komponenshez
 		template <std::size_t N>
 		auto get() {
 			return domain;
@@ -182,7 +206,7 @@ namespace db {
 			domain.insert(v);
 		}
 
-		// Az N. komponens domain-je matematikai értelemben nem különböztetjük meg õket egy halmaz tartozik az összes komponenshez
+		// Az N. komponens domain-je matematikai Ã©rtelemben nem kÃ¼lÃ¶nbÃ¶ztetjÃ¼k meg Å‘ket egy halmaz tartozik az Ã¶sszes komponenshez
 		template <std::size_t N>
 		auto get() {
 			return domain;
@@ -192,12 +216,12 @@ namespace db {
 
 }
 
-// db::quary(domain, kifejezés) elkezdi kiértékelni a kifejezést a domain-en és visszaadja az eredményhalmazt (akkor kerül bele egy adott érték, ha a kifejezés igaz rá)
-// db::any(domain, kifejezés) elkezdi kiértékelni a kifejezést a domain-en és visszatér igazzal ha a változó valamely értéke mellett igaz a kifejezés
-// db::all(domain, kifejezés) elkezdi kiértékelni a kifejezést a domain-en és visszatér igazzal ha a változó bármely értéke mellett igaz a kifejezés
+// db::quary(domain, kifejezÃ©s) elkezdi kiÃ©rtÃ©kelni a kifejezÃ©st a domain-en Ã©s visszaadja az eredmÃ©nyhalmazt (akkor kerÃ¼l bele egy adott Ã©rtÃ©k, ha a kifejezÃ©s igaz rÃ¡)
+// db::any(domain, kifejezÃ©s) elkezdi kiÃ©rtÃ©kelni a kifejezÃ©st a domain-en Ã©s visszatÃ©r igazzal ha a vÃ¡ltozÃ³ valamely Ã©rtÃ©ke mellett igaz a kifejezÃ©s
+// db::all(domain, kifejezÃ©s) elkezdi kiÃ©rtÃ©kelni a kifejezÃ©st a domain-en Ã©s visszatÃ©r igazzal ha a vÃ¡ltozÃ³ bÃ¡rmely Ã©rtÃ©ke mellett igaz a kifejezÃ©s
 
 
-// Mivel szemantikát nem lehet az egyes record oszlopokhoz rendelni kódban, ezért a típusokat nevezzük át, hogy utaljunk rá
+// Mivel szemantikÃ¡t nem lehet az egyes record oszlopokhoz rendelni kÃ³dban, ezÃ©rt a tÃ­pusokat nevezzÃ¼k Ã¡t, hogy utaljunk rÃ¡
 namespace datamodel {
 
 	using date = int;
@@ -205,21 +229,21 @@ namespace datamodel {
 
 }
 
-// Használat:
-// Ha R konstant reláció, t sorváltozó:
-// sorkalkulus kifejezés -> db::quary
+// HasznÃ¡lat:
+// Ha R konstant relÃ¡ciÃ³, t sorvÃ¡ltozÃ³:
+// sorkalkulus kifejezÃ©s -> db::quary
 // R(t) -> R(t)
 // t[i] -> std::get<i-1>(t)
-// mûveletek, aritmetikai relációk nem változtak
+// mÅ±veletek, aritmetikai relÃ¡ciÃ³k nem vÃ¡ltoztak
 // egzisztencia kvantor -> db::any
-// univerális kvantor -> db::all
+// univerÃ¡lis kvantor -> db::all
 
 int main() {
 
-	// Elsõ közelítésben a [](){} egy syntaxis, amivel functort tudsz írni szebben 
-	// Az & jel szükséges, hogy elérjük a lambdán kívüli változókat (referenciaként)
-	// Ha többet szeretnél tudni lsd. https://en.cppreference.com/w/cpp/language/lambda
-	// Az auto kulcsszó kitalálja a típust, ha az ismert
+	// ElsÅ‘ kÃ¶zelÃ­tÃ©sben a [](){} egy syntaxis, amivel functort tudsz Ã­rni szebben 
+	// Az & jel szÃ¼ksÃ©ges, hogy elÃ©rjÃ¼k a lambdÃ¡n kÃ­vÃ¼li vÃ¡ltozÃ³kat (referenciakÃ©nt)
+	// Ha tÃ¶bbet szeretnÃ©l tudni lsd. https://en.cppreference.com/w/cpp/language/lambda
+	// Az auto kulcsszÃ³ kitalÃ¡lja a tÃ­pust, ha az ismert
 
 	// BEVETEL(DATUM, OSSZEG)
 	const db::relation<datamodel::date, datamodel::sum> bevetel {
@@ -237,11 +261,11 @@ int main() {
 		{ 2, 4 }
 	};
 
-	// Elõadáson "A"-val jelöltétek (interpretációs alaphalmaz)
+	// ElÅ‘adÃ¡son "A"-val jelÃ¶ltÃ©tek (interpretÃ¡ciÃ³s alaphalmaz)
 	db::integer_interpretation_domain domain{0, 100}; 
 	
-	// A kiértékelés bejárjuk a rekord minden komponensével az interpretációs alaphalmazt (ebben az esetben 2 for ciklus, mivel 2 komponense van)
-	// A sorkalkulus joinolja a táblákat
+	// A kiÃ©rtÃ©kelÃ©s bejÃ¡rjuk a rekord minden komponensÃ©vel az interpretÃ¡ciÃ³s alaphalmazt (ebben az esetben 2 for ciklus, mivel 2 komponense van)
+	// A sorkalkulus joinolja a tÃ¡blÃ¡kat
 	const auto result = db::query(domain, [&](const db::record<int, int, int> t)  {
 		return bevetel(std::tuple{ std::get<0>(t), std::get<1>(t) }) && db::any(domain, [&](const db::record<int, int> u) {
 			return std::get<1>(t) == std::get<0>(u) && std::get<2>(t) == std::get<1>(u) && befizet(u); 
