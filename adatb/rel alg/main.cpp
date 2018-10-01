@@ -163,7 +163,7 @@ namespace db {
 		std::vector<int> domain;
 	public:
 
-		integer_interpretation_domain(std::size_t min, std::size_t max) : min{ min }, max{ max }, domain(max) {
+		integer_interpretation_domain(std::size_t min, std::size_t max) : min{ min }, max{ max }, domain(max-min+1) {
 			std::iota(domain.begin(), domain.end(), min);
 		}
 
