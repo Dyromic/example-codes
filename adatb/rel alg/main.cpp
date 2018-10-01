@@ -6,29 +6,6 @@
 #include <numeric>
 #include <variant>
 #include <set>
-
-namespace utility {
-
-	template<class F>
-	struct function_traits : public function_traits<decltype(&F::operator())> {};
-
-	template <class R, class... Args>
-	struct function_traits<R(*)(Args...)> {
-
-		using result = typename R;
-
-		using args = typename std::tuple<Args...>;
-
-		template <std::size_t I>
-		using arg = std::tuple_element_t<I, args>;
-#include <iostream>
-#include <vector>
-#include <tuple>
-#include <algorithm>
-#include <initializer_list>
-#include <numeric>
-#include <variant>
-#include <set>
 #include <functional>
 
 namespace utility {
